@@ -4,7 +4,7 @@ const Contact = require("../models/contact-model")
 const uuid = require('uuid');
 const getContact = asyncHandler(
     async (req, res) => {
-        const result = await Contact.find();
+        const result = await Contact.find({userId: req.user.id});
         res.status(200).json({
           error: false,
           message: "Running successfully",
@@ -15,7 +15,7 @@ const getContact = asyncHandler(
 const getContactById = asyncHandler(
     async(req, res) => {
 
-        const result = await Contact.findOne({id: req.params.id});
+        const result = await Contact.findOne({id: req.params.id, userId: req.user.id});
         if(!result){
             res.status(400);
             throw new Error( "No Contact found");
@@ -29,6 +29,7 @@ const getContactById = asyncHandler(
 );
 
 const createContact = asyncHandler(async(req, res) => {
+
     const {name, contact, email} = req.body;
 
     if( !name || !contact || !email){
@@ -40,7 +41,8 @@ const createContact = asyncHandler(async(req, res) => {
         id: uuid.v4(),
         name: name,
         contact: contact, 
-        email: email
+        email: email,
+        userId: req.user.id
     });
     
     return res.status(201).json({
@@ -54,7 +56,7 @@ const createContact = asyncHandler(async(req, res) => {
 const updateContact = asyncHandler(
     async (req, res) => {
       const updateContact = req.body;
-      const result =await Contact.findOneAndUpdate({id: req.params.id},updateContact);
+      const result =await Contact.findOneAndUpdate({id: req.params.id, userId: req.user.id},updateContact,{new: true});
       
       if(!result){
         res.status(400);
@@ -70,7 +72,7 @@ const updateContact = asyncHandler(
 
 const deleteContact =asyncHandler(
     async(req, res) => {
-      const result = await Contact.findOneAndDelete({id: req.params.id});
+      const result = await Contact.findOneAndDelete({id: req.params.id, userId: req.user.id});
       
       if(!result){
         res.status(400);
